@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
@@ -22,7 +22,7 @@ namespace SEELE
         List<GameObject> syntaxTree = new List<GameObject>();
 
         string classModel = "local CLASSNAME = class(\"CLASSNAME\")";
-        string parentClassModel = "local CLASSNAME = class(\"CLASSNAME\",\"PARENTCLASS\")";
+        string parentClassModel = "local CLASSNAME = class(\"CLASSNAME\",PARENTCLASS)";
         string functionModel = "function CLASSNAME:FUNCTIONNAME()";
         string variableModel = "    self.VARIABLENAMEObj = Util.FindChildBreadth(self.PARENTCLASS,\"OBJNAME\")";
         string endModel = "end \n";
@@ -171,7 +171,7 @@ namespace SEELE
             foreach (Object obj in selection)
             {
                 GameObject o = obj as GameObject;
-                if ( o != null )
+                if ( o != null || o.transform.parent != null )
                 {
                     gameObjList.Add(o);
                     AddSelectName(o);
@@ -201,7 +201,7 @@ namespace SEELE
                 if (obj.transform.parent.gameObject.name == "Camera" || !obj.transform.parent || 
                     !syntaxTree.Find((x) => { return x == obj.transform.parent.gameObject; }))
                 {
-                    info = getVariableString(variableName, "gameObj", obj.transform.name);
+                    info = getVariableString(variableName, "gameObject", obj.transform.name);
                 }
                 else
                 {
@@ -244,17 +244,18 @@ namespace SEELE
 
         void CreateSyntaxTree()
         {
-            GameObject parent = null;
+            Transform parent = null;
+
             foreach (GameObject obj in gameObjList)
             {
-                parent = obj.transform.parent.gameObject;
-                if (parent.name == "Camera" || !parent)
+                parent = obj.transform.parent;
+                if (!parent || parent.name == "Camera" )
                 {
                     AddSyntaxTree(obj);
                 }
                 else
                 {
-                    AddSyntaxTree(parent,true);
+                    AddSyntaxTree(parent.gameObject,true);
                     AddSyntaxTree(obj);
                 }
             }
@@ -262,5 +263,3 @@ namespace SEELE
 
     }
 }
-
-
